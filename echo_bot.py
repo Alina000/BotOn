@@ -8,7 +8,7 @@ from telebot import types
 from choice import choice_main, location_search, users_count
 
 sm = u'\U0001F603'
-sm1= u'\U0001F601'
+sm1 = u'\U0001F601'
 bot = telebot.TeleBot(constants.token)
 
 
@@ -38,25 +38,30 @@ def request_location(message):
 @bot.message_handler(content_types=['location'])
 def location(message):
     bot.send_message(message.chat.id, 'Подождите...Ищем события... ')
-    lat = 55.7522200
-        #(ast.literal_eval(str(message.location))["latitude"])
-    lon = 37.6155600
-        #(ast.literal_eval(str(message.location))["longitude"])
+    lat = (ast.literal_eval(str(message.location))["latitude"])
+    lon = (ast.literal_eval(str(message.location))["longitude"])
+    big_dick=""
     answer = location_search(lat, lon)
-
-    for i in range(len(answer)):
+    for d in range(len(answer)):
         if type(answer) == str:
-            message1 = answer
+            big_dick = answer
         else:
-            message1 = "#" + str(1) + "\n" + answer[i]["title"] + "\n" + answer[i][
-                "content"] + "\n" + "Начало события" + \
-                       answer[i][
-                           "start"] + "\n" + "Конец события" + answer[i]["end"] + "\n" + answer[i]["url"]
-
-    bot.send_message(message.chat.id, message1)
+            try:
+                message1 = "\n" + answer[d]["title"] + "\n" + answer[d][
+                    "content"] + "\n" + "Начало события: " + \
+                           answer[d][
+                               "start"] + "\n" + "Конец события: " + answer[d]["end"] + "\n" + answer[d][
+                               "url"]
+            except KeyError:
+                message1 = "\n" + answer[d]["title"] + "\n" + answer[d][
+                    "content"] + "\n" + answer[d]["end"] + "\n" + answer[d][
+                               "url"]
+            big_dick += message1
+    bot.send_message(message.chat.id, big_dick)
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=1)
     keyboard.add(types.KeyboardButton('/Начать сначала'))
     bot.send_message(message.chat.id, sm + 'Мы всегда рады помочь Вам!', reply_markup=keyboard)
+
 
 @bot.message_handler(commands=['Все'])
 def handle_start(message):
@@ -184,7 +189,8 @@ def handle_start(message):
         try:
             dermo = choice_main(text)
         except requests.exceptions.ReadTimeout:
-            bot.send_message(message.chat.id, 'Превышено время ожидания ответа от KudaGo.com...Попробуйте заново через несколько минут')
+            bot.send_message(message.chat.id,
+                             'Превышено время ожидания ответа от KudaGo.com...Попробуйте заново через несколько минут')
         for i in range(len(dermo)):
             mes = "#" + str(i + 1) + "\n" + dermo[i]["title"] + "\n" + " " + dermo[i][
                 "content"] + "\n" + "Смотреть больше:" + dermo[i]["url"]
@@ -202,6 +208,7 @@ def handle_start(message):
         keyboard.add(types.KeyboardButton('/Начать сначала'))
         bot.send_message(message.chat.id, 'Попробуйте найти события еще раз', reply_markup=keyboard)
         users_count()
+
 
 if __name__ == '__main__':
     bot.polling(none_stop=True)
